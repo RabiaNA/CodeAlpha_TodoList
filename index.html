@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Taskify: Your ultimate productivity companion for task management.">
+  <title>Taskify - Organize Your Life</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="light">
+  <header class="app-header">
+    <div class="header-content">
+      <h1 class="logo">
+        <span class="logo-icon"><i class="fas fa-tasks"></i></span> Taskify
+      </h1>
+      <nav class="task-nav">
+        <button class="nav-btn clear-filter" aria-label="Go to Home" onclick="clearFilter()">
+          <i class="fas fa-home"></i> Home
+        </button>
+        <button class="nav-btn priority-low" aria-label="View Low Priority Tasks" onclick="filterTasks('low')">
+          <i class="fas fa-circle" style="color: #22c55e;"></i> Low
+        </button>
+        <button class="nav-btn priority-medium" aria-label="View Medium Priority Tasks" onclick="filterTasks('medium')">
+          <i class="fas fa-circle" style="color: #eab308;"></i> Medium
+        </button>
+        <button class="nav-btn priority-high" aria-label="View High Priority Tasks" onclick="filterTasks('high')">
+          <i class="fas fa-circle" style="color: #e11d48;"></i> High
+        </button>
+        <div class="theme-switcher">
+          <button class="theme-toggle" aria-label="Toggle Theme Menu" onclick="toggleThemeMenu()">
+            <i class="fas fa-sun light-icon"></i>
+            <i class="fas fa-moon dark-icon"></i>
+            <span class="theme-text">Theme</span>
+          </button>
+          <div id="theme-options" class="hidden">
+            <div class="theme-option" onclick="setTheme('light')" aria-label="Light Theme">
+              <div class="theme-preview light-preview"></div>
+              <span>Light</span>
+            </div>
+            <div class="theme-option" onclick="setTheme('dark')" aria-label="Dark Theme">
+              <div class="theme-preview dark-preview"></div>
+              <span>Dark</span>
+            </div>
+            <div class="theme-option" onclick="setTheme('system')" aria-label="System Theme">
+              <div class="theme-preview system-preview"></div>
+              <span>System</span>
+            </div>
+          </div>
+        </div>
+        <button class="nav-btn export-tasks" onclick="exportTasks()" aria-label="Export Tasks">
+          <i class="fas fa-download"></i> Export
+        </button>
+        <button class="nav-btn reset-data" onclick="resetData()" aria-label="Reset All Tasks">
+          <i class="fas fa-trash"></i> Reset
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <div id="loadingSpinner" class="loading-spinner hidden" role="status">
+      <div class="spinner"></div>
+      <span class="sr-only">Loading...</span>
+    </div>
+    
+    <section id="homePage" aria-labelledby="welcome-heading">
+      <div class="welcome-card">
+        <h1 class="welcome" id="welcome-heading">Welcome to Taskify</h1>
+        <div class="intro">
+          <h2>Master Your Productivity</h2>
+          <p>Taskify empowers you to organize tasks with precision. Prioritize, categorize, and track progress effortlessly with voice input, due date reminders, and insightful statistics. Start by selecting a priority above!</p>
+        </div>
+      </div>
+      <div class="stats-container">
+        <div class="stats-dashboard">
+          <h3>Task Overview</h3>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <h4>Total Tasks</h4>
+              <p id="totalTasks">0</p>
+            </div>
+            <div class="stat-card">
+              <h4>Completed</h4>
+              <p id="completedTasks">0</p>
+            </div>
+            <div class="stat-card">
+              <h4>Due Today</h4>
+              <p id="dueTodayTasks">0</p>
+            </div>
+            <div class="stat-card">
+              <h4>Overdue</h4>
+              <p id="overdueTasks">0</p>
+            </div>
+          </div>
+        </div>
+        <div class="priority-distribution">
+          <h3>Priority Distribution</h3>
+          <div class="priority-chart">
+            <canvas id="priorityChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="taskPage" class="task-page hidden" aria-labelledby="tasks-heading">
+      <div class="task-controls">
+        <div class="task-inputs">
+          <select id="prioritySelect" aria-label="Select Task Priority">
+            <option value="low">Low</option>
+            <option value="medium" selected>Medium</option>
+            <option value="high">High</option>
+          </select>
+          <select id="categorySelect" aria-label="Select Task Category">
+            <option value="Work">Work</option>
+            <option value="Personal" selected>Personal</option>
+            <option value="Shopping">Shopping</option>
+            <option value="Health">Health</option>
+            <option value="Other">Other</option>
+          </select>
+          <input type="text" id="dueDate" placeholder="Select due date" aria-label="Select Due Date">
+          <input type="text" id="taskInput" placeholder="Enter task name" aria-label="Task Name">
+          <input type="text" id="notesInput" placeholder="Add notes (optional)" aria-label="Task Notes">
+        </div>
+        <div class="task-actions">
+          <button class="add-task-btn" onclick="addTask()" aria-label="Add Task">
+            <i class="fas fa-plus"></i> Add Task
+          </button>
+        </div>
+      </div>
+
+      <div class="task-toolbar">
+        <div class="search-bar">
+          <input type="text" id="searchInput" placeholder="Search tasks..." oninput="searchTasks()" aria-label="Search Tasks">
+          <i class="fas fa-search"></i>
+        </div>
+        <div class="view-options">
+          <button id="viewAll" class="active" onclick="changeView('all')">All</button>
+          <button id="viewActive" onclick="changeView('active')">Active</button>
+          <button id="viewCompleted" onclick="changeView('completed')">Completed</button>
+        </div>
+      </div>
+
+      <div class="task-block">
+        <div class="task-header">
+          <h3 id="tasks-heading">Your Tasks <span class="task-count">(0 tasks)</span></h3>
+          <select id="sortSelect" onchange="renderTasks()" aria-label="Sort Tasks">
+            <option value="default">Sort: Default</option>
+            <option value="name">Sort: Name (A-Z)</option>
+            <option value="dueDate">Sort: Due Date</option>
+            <option value="createdAt">Sort: Creation Date</option>
+            <option value="priority">Sort: Priority</option>
+          </select>
+        </div>
+        <div class="task-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+          <div class="task-progress-bar"></div>
+          <span class="progress-text">0% Complete</span>
+        </div>
+        <ul id="taskList" role="list"></ul>
+      </div>
+    </section>
+
+    <div id="notification" class="notification hidden" role="alert"></div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
